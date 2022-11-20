@@ -1,9 +1,10 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <list>
 
 #include "./myInclude/stipulatedTipe.h"
-#include "rarc_Format.h"
+#include "rarcFormat.h"
 
 #define headerSize 0x20
 #define dataHeaderSize 0x20
@@ -13,12 +14,12 @@
 // default int32 size is 32bit.
 
 class rarc {
-    rarc_FormatBlock::header Header;
-    rarc_FormatBlock::dataHeader DataHeader;
-    std::vector<rarc_FormatBlock::dirNodeSection> DirNodeSection;
-    std::vector<rarc_FormatBlock::fileNodeSection> FileNodeSection;
-    std::vector<std::vector<u8>> StringData;
-    std::vector<std::vector<u8>> FileData;
+    rarcFormatBlock::header Header;
+    rarcFormatBlock::dataHeader DataHeader;
+    std::list<rarcFormatBlock::dirNodeSection> DirNodeSection;
+    std::list<rarcFormatBlock::fileNodeSection> FileNodeSection;
+    std::list<std::vector<u8>> StringData;
+    std::list<std::vector<u8>> FileData;
 
    protected:
    public:

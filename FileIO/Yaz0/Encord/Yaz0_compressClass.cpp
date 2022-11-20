@@ -4,6 +4,7 @@
 #include <list>
 
 #include "./myInclude/stipulatedTipe.h"
+using namespace nintendoFormat;
 
 Yaz0Encord::Yaz0Encord() {
     uncompressSize = 0;
@@ -37,16 +38,16 @@ void Yaz0Encord::newData(u8 *const pSourceData, u32 const SourceDataSize) {
     if (SourceDataSize <= 8) {
         return;
     }
-
     // init data
-    data_st3 src;
+    reset();
+    arg_pack src;
     src.changeDataPointer(pSourceData);
     src.Size = SourceDataSize;
 
     compressMultiplication = 0.0f;
 
     // main branch
-    data_st3 dst_buf;
+    arg_pack dst_buf;
     encode(src, dst_buf);
 
     src.detachDataPointer();  // Becouse argment
@@ -62,8 +63,17 @@ void Yaz0Encord::newData(u8 *const pSourceData, u32 const SourceDataSize) {
 
 // private
 
-Yaz0Encord::data_st3 &Yaz0Encord::encode(data_st3 const &arg_rSrc,
-                                         data_st3 &return_rDst) const {
+void Yaz0Encord::reset() {
+    delete[] dst;
+    dst = new u8[0];
+    uncompressSize = 0;
+    dstSize = 0;
+    dstPlace = 0;
+    compressMultiplication = 0;
+}
+
+Yaz0Encord::arg_pack &Yaz0Encord::encode(arg_pack const &arg_rSrc,
+                                         arg_pack &return_rDst) const {
     return_rDst.changeDataPointer(new u8[arg_rSrc.Size]);
 
     // null chack
@@ -78,7 +88,7 @@ Yaz0Encord::data_st3 &Yaz0Encord::encode(data_st3 const &arg_rSrc,
     // init decided format area
     return_rDst.Data[dstPlace++] = 0xff;  // uncompress flag write
 
-    while (srcPlace < flontNonCompressByteSize) {
+    while (srcPlace < Yaz0_flontNonCompressByteSize) {
         // not conpress dictionaly
         return_rDst.Data[dstPlace++] = arg_rSrc.Data[srcPlace++];
     }
@@ -105,37 +115,39 @@ Yaz0Encord::data_st3 &Yaz0Encord::encode(data_st3 const &arg_rSrc,
 
         // std::cout << compressVal[compressSize_Byte] << std::endl; //dev
 
-        if (compressVal[compressSize_Byte] < 3) {
+        if (compressVal[Yaz0_compressSize_Byte] < 3) {
             // don't compress
             return_rDst.Data[uncompressFlagWritePlace] |= 0x01
                                                           << uncompressBitCount;
             return_rDst.Data[dstPlace++] = arg_rSrc.Data[srcPlace++];
         } else {
             // compress
-            if (compressVal[compressSize_Byte] <=
-                compress2byteFormatMaxLength) {
+            if (compressVal[Yaz0_compressSize_Byte] <=
+                Yaz0_compress2byteFormatMaxLength) {
                 // 2 byte format
-                compressVal[compressSize_Byte] -= 0x02;
+                compressVal[Yaz0_compressSize_Byte] -= 0x02;
                 return_rDst.Data[dstPlace++] =
-                    ((compressVal[compressSize_Byte] & 0x0f) << 4) |  // length
-                    (((compressVal[1]) & 0x0f00) >> 8);               // offset
+                    ((compressVal[Yaz0_compressSize_Byte] & 0x0f)
+                     << 4) |  // length
+                    (((compressVal[Yaz0_compressOffset]) & 0x0f00) >>
+                     8);  // offset
                 return_rDst.Data[dstPlace++] =
-                    compressVal[1] & 0x00ff;  // offset
+                    compressVal[Yaz0_compressOffset] & 0x00ff;  // offset
 
-                srcPlace += (compressVal[compressSize_Byte] & 0x0f) +
+                srcPlace += (compressVal[Yaz0_compressSize_Byte] & 0x0f) +
                             0x02;  // seek compressed length
                 // _ASSERTE(_CrtCheckMemory());
             } else {
                 // 3 byte format
-                compressVal[compressSize_Byte] -= 0x12;
+                compressVal[Yaz0_compressSize_Byte] -= 0x12;
                 return_rDst.Data[dstPlace++] =
-                    (compressVal[1] & 0x0f00) >> 8;  // offset
+                    (compressVal[Yaz0_compressOffset] & 0x0f00) >> 8;  // offset
                 return_rDst.Data[dstPlace++] =
-                    compressVal[1] & 0x00ff;  // offset
+                    compressVal[Yaz0_compressOffset] & 0x00ff;  // offset
                 return_rDst.Data[dstPlace++] =
-                    compressVal[compressSize_Byte] & 0x00ff;  // length
+                    compressVal[Yaz0_compressSize_Byte] & 0x00ff;  // length
 
-                srcPlace += (compressVal[compressSize_Byte] & 0x00ff) +
+                srcPlace += (compressVal[Yaz0_compressSize_Byte] & 0x00ff) +
                             0x12;  // seek compressed length
                 // _ASSERTE(_CrtCheckMemory());
             }
@@ -161,12 +173,12 @@ Yaz0Encord::data_st3 &Yaz0Encord::encode(data_st3 const &arg_rSrc,
     return return_rDst;
 }
 
-u32 *Yaz0Encord::serchDictionaly(data_st3 const &arg_rSrc,
+u32 *Yaz0Encord::serchDictionaly(arg_pack const &arg_rSrc,
                                  u32 const &arg_rSrcPlace,
                                  u32 *const return_pCompIndex) const {
     int const minReferencePlace = arg_rSrcPlace - 1;
     int compLength = 0, compLengthBuf = 0, compLengthOffset = 0,
-        maxReferencePlace = minReferencePlace - referanceLengthLimit;
+        maxReferencePlace = minReferencePlace - Yaz0_referanceLengthLimit;
 
     bool overWriteFlag = false;
     bool ThroughFlag = false;
@@ -184,7 +196,7 @@ u32 *Yaz0Encord::serchDictionaly(data_st3 const &arg_rSrc,
                arg_rSrc.Data[arg_rSrcPlace + compLengthBuf]) {
             if (arg_rSrcPlace + compLengthBuf ==
                     arg_rSrc.Size - 1 ||  // FileEnd Over.
-                compLengthBuf == maxCompressDataSize) {
+                compLengthBuf == Yaz0_maxCompressDataSize) {
                 // --compLengthBuf;
                 overWriteFlag = true;
                 break;
@@ -213,7 +225,7 @@ u32 *Yaz0Encord::serchDictionaly(data_st3 const &arg_rSrc,
                    arg_rSrc.Data[arg_rSrcPlace + compLengthBuf]) {
                 if (arg_rSrcPlace + compLengthBuf ==
                         arg_rSrc.Size - 1 ||  // FileEnd Over.
-                    compLengthBuf == maxCompressDataSize + 0x01) {
+                    compLengthBuf == Yaz0_maxCompressDataSize + 0x01) {
                     // --compLengthBuf;
                     break;
                 }
@@ -221,7 +233,8 @@ u32 *Yaz0Encord::serchDictionaly(data_st3 const &arg_rSrc,
             }
 
             if (compLengthBuf >
-                compress2byteFormatMaxLength) {  // 0x11 is 2 byte compress max
+                Yaz0_compress2byteFormatMaxLength) {  // 0x11 is 2 byte compress
+                                                      // max
                 ifComp3byte = 0x01;
             }
 
@@ -248,9 +261,9 @@ u32 *Yaz0Encord::serchDictionaly(data_st3 const &arg_rSrc,
     return return_pCompIndex;
 }
 
-Yaz0Encord::data_st3 &Yaz0Encord::new_optimisation(
-    data_st3 &return_rOptimizeData) const {
-    data_st3 BaseData(new u8[return_rOptimizeData.Size]);
+Yaz0Encord::arg_pack &Yaz0Encord::new_optimisation(
+    arg_pack &return_rOptimizeData) const {
+    arg_pack BaseData(new u8[return_rOptimizeData.Size]);
 
     for (u32 Place = 0; Place < return_rOptimizeData.Size; Place++) {
         BaseData.Data[Place] = return_rOptimizeData.Data[Place];

@@ -1,7 +1,7 @@
 #pragma once
 #include "./myInclude/stipulatedTipe.h"
 
-namespace rarc_FormatBlock {
+namespace rarcFormatBlock {
 // static block
 struct header  // 0x20
 {
@@ -52,5 +52,4 @@ struct fileNodeSection  // 0x10
     u32 dataIndex;                      // 0x08
     u32 sizeForDataindex;               // 0x0c
 };
-
-}  // namespace rarc_FormatBlock
+}  // namespace rarcFormatBlock
