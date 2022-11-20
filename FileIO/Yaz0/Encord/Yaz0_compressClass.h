@@ -41,8 +41,9 @@ class Yaz0Encord {
 
     void reset();
     arg_pack &encode(arg_pack const &arg_rSrc, arg_pack &return_rDst) const;
-    u32 *serchDictionaly(arg_pack const &arg_rSrc, u32 const &arg_rSrcPlace,
-                         u32 *const return_pCompIndex) const;
+    void serchDictionaly(arg_pack const &arg_rSrc, u32 const &arg_rSrcPlace,
+                         u32 &return_rCompSize, u32 &return_rCompOffset,
+                         u32 &arg_return_rCompThroughNumb) const;
     arg_pack &new_optimisation(arg_pack &return_rOptimizeData) const;
     // compressSize_Byte:8or4 offset:12
     // if null, 1 0 output.

@@ -95,14 +95,12 @@ Yaz0Encord::arg_pack &Yaz0Encord::encode(arg_pack const &arg_rSrc,
 
     // main
     u32 uncompressBitCount = 0, uncompressFlagWritePlace = 0;
-    u32 compressVal[3];
-    compressVal[2] = 0x00;
+    u32 compSize;
+    u32 compOffset;
+    u32 compThroughCount = 0x01;
 
     while (srcPlace < arg_rSrc.Size) {
         if (uncompressBitCount == 0) {
-            // std::cout << std::hex
-            //           << (u32)return_rDst.Data[uncompressFlagWritePlace]
-            //           << std::endl;  // dev
             uncompressFlagWritePlace = dstPlace++;
             return_rDst.Data[uncompressFlagWritePlace] = 0x00;
             uncompressBitCount = 8;
@@ -110,48 +108,37 @@ Yaz0Encord::arg_pack &Yaz0Encord::encode(arg_pack const &arg_rSrc,
         uncompressBitCount--;
 
         // serch(function)
-        serchDictionaly(arg_rSrc, srcPlace, compressVal);
-        //_ASSERTE(_CrtCheckMemory());
+        serchDictionaly(arg_rSrc, srcPlace, compSize, compOffset,
+                        compThroughCount);
 
-        // std::cout << compressVal[compressSize_Byte] << std::endl; //dev
 
-        if (compressVal[Yaz0_compressSize_Byte] < 3) {
+        if (compSize < 3) {
             // don't compress
             return_rDst.Data[uncompressFlagWritePlace] |= 0x01
                                                           << uncompressBitCount;
             return_rDst.Data[dstPlace++] = arg_rSrc.Data[srcPlace++];
         } else {
             // compress
-            if (compressVal[Yaz0_compressSize_Byte] <=
-                Yaz0_compress2byteFormatMaxLength) {
+            if (compSize <= Yaz0_compress2byteFormatMaxLength) {
                 // 2 byte format
-                compressVal[Yaz0_compressSize_Byte] -= 0x02;
+                compSize -= 0x02;
                 return_rDst.Data[dstPlace++] =
-                    ((compressVal[Yaz0_compressSize_Byte] & 0x0f)
-                     << 4) |  // length
-                    (((compressVal[Yaz0_compressOffset]) & 0x0f00) >>
-                     8);  // offset
-                return_rDst.Data[dstPlace++] =
-                    compressVal[Yaz0_compressOffset] & 0x00ff;  // offset
+                    ((compSize & 0x0f) << 4) |                       // length
+                    (((compOffset)&0x0f00) >> 8);                    // offset
+                return_rDst.Data[dstPlace++] = compOffset & 0x00ff;  // offset
 
-                srcPlace += (compressVal[Yaz0_compressSize_Byte] & 0x0f) +
-                            0x02;  // seek compressed length
-                // _ASSERTE(_CrtCheckMemory());
+                srcPlace += (compSize & 0x0f) + 0x02;  // seek compressed length
             } else {
                 // 3 byte format
-                compressVal[Yaz0_compressSize_Byte] -= 0x12;
+                compSize -= 0x12;
                 return_rDst.Data[dstPlace++] =
-                    (compressVal[Yaz0_compressOffset] & 0x0f00) >> 8;  // offset
-                return_rDst.Data[dstPlace++] =
-                    compressVal[Yaz0_compressOffset] & 0x00ff;  // offset
-                return_rDst.Data[dstPlace++] =
-                    compressVal[Yaz0_compressSize_Byte] & 0x00ff;  // length
+                    (compOffset & 0x0f00) >> 8;                      // offset
+                return_rDst.Data[dstPlace++] = compOffset & 0x00ff;  // offset
+                return_rDst.Data[dstPlace++] = compSize & 0x00ff;    // length
 
-                srcPlace += (compressVal[Yaz0_compressSize_Byte] & 0x00ff) +
-                            0x12;  // seek compressed length
-                // _ASSERTE(_CrtCheckMemory());
+                srcPlace +=
+                    (compSize & 0x00ff) + 0x12;  // seek compressed length
             }
-            // _ASSERTE(_CrtCheckMemory());
         }
     }
 
@@ -173,11 +160,12 @@ Yaz0Encord::arg_pack &Yaz0Encord::encode(arg_pack const &arg_rSrc,
     return return_rDst;
 }
 
-u32 *Yaz0Encord::serchDictionaly(arg_pack const &arg_rSrc,
+void Yaz0Encord::serchDictionaly(arg_pack const &arg_rSrc,
                                  u32 const &arg_rSrcPlace,
-                                 u32 *const return_pCompIndex) const {
-    int const minReferencePlace = arg_rSrcPlace - 1;
-    int compLength = 0, compLengthBuf = 0, compLengthOffset = 0,
+                                 u32 &return_rCompSize, u32 &return_rCompOffset,
+                                 u32 &arg_return_rCompThroughCount) const {
+    s32 const minReferencePlace = arg_rSrcPlace - 1;
+    s32 compLength = 0, compLengthBuf = 0, compLengthOffset = 0,
         maxReferencePlace = minReferencePlace - Yaz0_referanceLengthLimit;
 
     bool overWriteFlag = false;
@@ -239,7 +227,7 @@ u32 *Yaz0Encord::serchDictionaly(arg_pack const &arg_rSrc,
             }
 
             if (compLengthBuf >
-                (compLength + return_pCompIndex[2] +
+                (compLength + arg_return_rCompThroughCount +
                  ifComp3byte)) {  // default is "compLength + 0x01"
                 compLength = compLengthBuf;
                 ThroughFlag = true;
@@ -251,14 +239,13 @@ u32 *Yaz0Encord::serchDictionaly(arg_pack const &arg_rSrc,
     if (ThroughFlag) {
         compLength = 0;
         compLengthOffset = 0;
-        return_pCompIndex[2] += 0x01;
+        arg_return_rCompThroughCount += 0x01;
     } else {
-        return_pCompIndex[2] = 0x01;
+        arg_return_rCompThroughCount = 0x01;
     }
 
-    return_pCompIndex[0] = compLength;
-    return_pCompIndex[1] = compLengthOffset;
-    return return_pCompIndex;
+    return_rCompSize = compLength;
+    return_rCompOffset = compLengthOffset;
 }
 
 Yaz0Encord::arg_pack &Yaz0Encord::new_optimisation(
