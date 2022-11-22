@@ -8,4 +8,4 @@ Yaz0<br>
 bcsv<br>
 https://luma.aurumsmods.com/wiki/BCSV_(File_format)<br>
 
-You made me happy it if you write my name when using it.
+You made me happy it if you write my name or this place link when using it.
