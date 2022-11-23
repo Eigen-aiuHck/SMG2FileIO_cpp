@@ -27,8 +27,8 @@ class Yaz0Encord {
     void newData(u8 *const sourceData, u32 const sourceDataSize);
 
     std::vector<u8> getFormatData();
-    u32 getUncompressSize();
-    float getcompressMultiplication();
+    inline u32 getUncompressSize() { return uncompressSize; };
+    inline float getcompressMultiplication() { return compressMultiplication; };
 
    private:
     u8 *dst = nullptr;

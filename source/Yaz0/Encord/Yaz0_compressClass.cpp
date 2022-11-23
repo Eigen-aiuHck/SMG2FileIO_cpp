@@ -1,4 +1,4 @@
-#include "Yaz0_compressClass.h"
+#include "Yaz0/Encord/Yaz0_compressClass.h"
 
 #include <iomanip>
 #include <list>
@@ -110,7 +110,6 @@ Yaz0Encord::arg_pack &Yaz0Encord::encode(arg_pack const &arg_rSrc,
         // serch(function)
         serchDictionaly(arg_rSrc, srcPlace, compSize, compOffset,
                         compThroughCount);
-
 
         if (compSize < 3) {
             // don't compress
