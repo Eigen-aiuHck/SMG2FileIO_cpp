@@ -1,7 +1,8 @@
+#pragma once
 #include <list>
 
 #include "bcsvFormat.h"
-#include "myinclude/stipulatedTipe.h"
+#include "submodules/myInclude/stipulatedTipe.h"
 
 using namespace nintendoFormat;
 

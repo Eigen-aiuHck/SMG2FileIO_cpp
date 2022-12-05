@@ -2,7 +2,7 @@
 #include <list>
 #include <vector>
 
-#include "./myInclude/stipulatedTipe.h"
+#include "submodules/myInclude/stipulatedTipe.h"
 
 namespace nintendoFormat {
 #define Yaz0_flontNonCompressByteSize 0x08

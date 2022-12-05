@@ -1,6 +1,7 @@
+#pragma ouce
 #include <vector>
 
-#include "myinclude/stipulatedTipe.h"
+#include "submodules/myInclude/stipulatedTipe.h"
 
 namespace nintendoFormat {
 namespace bcsvFormatBlock {

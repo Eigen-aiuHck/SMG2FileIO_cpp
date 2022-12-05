@@ -1,5 +1,5 @@
 #pragma once
-#include "./myInclude/stipulatedTipe.h"
+#include "submodules/myInclude/stipulatedTipe.h"
 
 namespace rarcFormatBlock {
 // static block

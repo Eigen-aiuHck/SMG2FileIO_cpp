@@ -1,9 +1,9 @@
-#include "Yaz0/Encord/Yaz0_compressClass.h"
+#include "Yaz0/encord/Yaz0_compressClass.h"
 
 #include <iomanip>
 #include <list>
 
-#include "./myInclude/stipulatedTipe.h"
+#include "submodules/myInclude/stipulatedTipe.h"
 using namespace nintendoFormat;
 
 Yaz0Encord::Yaz0Encord() {

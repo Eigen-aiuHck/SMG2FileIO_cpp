@@ -3,8 +3,8 @@
 #include <vector>
 #include <list>
 
-#include "./myInclude/stipulatedTipe.h"
-#include "rarcFormat.h"
+#include "../submodules/myInclude/stipulatedTipe.h"
+#include "./rarcFormat.h"
 
 #define headerSize 0x20
 #define dataHeaderSize 0x20

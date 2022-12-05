@@ -1,3 +1,3 @@
-[submodule "myinclude"]
-	path = myinclude
+[submodule "include/submodules/myInclude"]
+	path = include/submodules/myInclude
 	url = https://github.com/Eigen-aiuHck/MyCppIncludes.git
