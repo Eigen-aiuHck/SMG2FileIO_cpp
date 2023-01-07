@@ -17,24 +17,33 @@ namespace nintendoFormat {
 
 class bcsv {
    public:
-    s32 addRow();
-    s32 deleteRow(s32 const &arg_deleteNumb);
-    s32 addColumn(u32 const &arg_nameHash, u32 const &arg_DataType);
-    s32 deleteColumn(u32 const &arg_DeleteNumb);
-    s32 deleteColumn(u32 const &arg_DeleteNameHash);
+    bcsv(u8 const *const arg_pSrcData, u32 const &arg_rSrcDataSize);
+    void newData(u8 const *const arg_pSrcData, u32 const &arg_rSrcDataSize);
+    std::vector<u8> outputBinary();
 
-    bool editEntry(std::vector<u32> const &arg_Value, u32 const &arg_row,
-                   u32 const &arg_column);
+    s32 addColumn(u32 const &arg_rInsertPlace,
+               bcsvFormatBlock::fieldSection &arg_rFieldData);
+    s32 deleteColumn(s32 const &arg_rDeleteNumb);
+    s32 addRow(u32 const &arg_rNameHash, u32 const &arg_rDataType);
+    s32 deleteRow(u32 const &arg_rDeleteNumb);
+
+    bool editEntry(std::vector<u32> const &arg_rValue, u32 const &arg_rRow,
+                   u32 const &arg_rColumn);
 
     std::list<u32> searchData(bcsvFormatBlock::stringPool const &);
     std::list<u32> serchData(bcsvFormatBlock::dataSection const &,
                              u32 const &arg_DataType);
 
+
    protected:
    private:
     bcsvFormatBlock::header Header;
     std::list<bcsvFormatBlock::fieldSection> FieldSection;
+    // Entry, <Data>
     std::list<bcsvFormatBlock::dataSection> DataSection;
-    std::list<bcsvFormatBlock::stringPool> StringPool;
+    bcsvFormatBlock::stringPool StringPool;
+    // std::list<bcsvFormatBlock::fieldSection>::iterator FieldSectionItr;
+    // std::list<bcsvFormatBlock::dataSection>::iterator DataSectionItr;
+    // std::list<bcsvFormatBlock::stringPool>::iterator StringPoolItr;
 };
 }  // namespace nintendoFormat
