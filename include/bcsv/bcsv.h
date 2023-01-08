@@ -22,7 +22,7 @@ class bcsv {
     std::vector<u8> outputBinary();
 
     s32 addColumn(u32 const &arg_rInsertPlace,
-               bcsvFormatBlock::fieldSection &arg_rFieldData);
+               bcsvFormatBlock::fieldSectionCell const &arg_rFieldData);
     s32 deleteColumn(s32 const &arg_rDeleteNumb);
     s32 addRow(u32 const &arg_rNameHash, u32 const &arg_rDataType);
     s32 deleteRow(u32 const &arg_rDeleteNumb);
@@ -38,7 +38,7 @@ class bcsv {
    protected:
    private:
     bcsvFormatBlock::header Header;
-    std::list<bcsvFormatBlock::fieldSection> FieldSection;
+    std::list<bcsvFormatBlock::fieldSectionCell> FieldSection;
     // Entry, <Data>
     std::list<bcsvFormatBlock::dataSection> DataSection;
     bcsvFormatBlock::stringPool StringPool;

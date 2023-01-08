@@ -29,7 +29,7 @@ void bcsv::newData(u8 const *const arg_pSrcData, u32 const &arg_rSrcDataSize) {
 
     // FieldSection
     for (u32 i = 0; i < Header.fieldCount; ++i) {
-        bcsvFormatBlock::fieldSection field = {};
+        bcsvFormatBlock::fieldSectionCell field = {};
 
         field.nameHash = convertEndian(*((u32 *)(&arg_pSrcData[SrcDataPlace])));
         SrcDataPlace += sizeof(field.nameHash);
@@ -67,27 +67,49 @@ void bcsv::newData(u8 const *const arg_pSrcData, u32 const &arg_rSrcDataSize) {
     }
 }
 
-s32 bcsv::addRow(u32 const &arg_rInsertPlace,
-                 bcsvFormatBlock::fieldSection &arg_rFieldData) {
-    u32 NewSectionDataSize = FieldSection.size() + 1;
+// Rework terget.
+s32 bcsv::addColumn(u32 const &arg_rInsertPlace,
+                    bcsvFormatBlock::fieldSectionCell const &arg_rFieldData) {
+    // Avoid duplicate hashes.
+    for (auto buf : FieldSection) {
+        if (buf.nameHash == arg_rFieldData.nameHash) {
+            return -1;
+        }
+    }
 
     // header
     ++Header.fieldCount;
 
     // FieldSection
     auto itr_FieldSection = FieldSection.begin();
-    for (u32 i = 0; i < arg_rInsertPlace; ++i) {
-        ++itr_FieldSection;
-    }
-    FieldSection.insert(itr_FieldSection, arg_rFieldData);
+    std::advance(itr_FieldSection, arg_rInsertPlace);
+    auto const itr_FieldInsertPlace =
+        FieldSection.insert(itr_FieldSection, arg_rFieldData);
 
     // Insert NULL to DataSection for added FieldSection.
     itr_FieldSection = FieldSection.begin();
+    {
+        u32 const InsertPlaceForData =
+            bcsvFormatBlock::dataSectionUtl::InsertPlaceCalculation(
+                FieldSection, arg_rFieldData);
+        u32 const InsertSizeForData =
+            bcsvFormatBlock::dataSectionUtl::dataSize(arg_rFieldData);
 
-    
+        // shift offsetToData
+        (*itr_FieldInsertPlace).offsetToData = 0x00;
+        for (auto buf_FieldSectionCell : FieldSection) {
+            if (InsertPlaceForData < buf_FieldSectionCell.offsetToData)
+                buf_FieldSectionCell.offsetToData += InsertSizeForData;
+        }
 
-    for (u32 i = 0; i < Header.entryCount; ++i) {
-        if (i == arg_rInsertPlace) {
+        // initrize offsetToData and insert init Data
+        (*itr_FieldInsertPlace).offsetToData = InsertPlaceForData;
+        for (auto buf_DataSection : DataSection) {
+            auto Itr_InsertPlace =
+                std::next(buf_DataSection.begin(), InsertPlaceForData);
+            for (u32 i = 0; i < InsertSizeForData; ++i) {
+                buf_DataSection.insert(Itr_InsertPlace, 0x00);
+            }
         }
     }
 }
